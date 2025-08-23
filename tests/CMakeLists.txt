@@ -12,16 +12,4 @@ target_link_libraries(UnitTests PRIVATE Catch2::Catch2WithMain chip8_lib)
 
 # catch_discover_tests(tests)
 include(CTest)
-catch_discover_tests(
-  UnitTests
-  TEST_PREFIX
-  "TEST."
-  REPORTER
-  XML
-  OUTPUT_DIR
-  .
-  OUTPUT_PREFIX
-  "TEST."
-  OUTPUT_SUFFIX
-  .xml
-)
+catch_discover_tests(UnitTests)
