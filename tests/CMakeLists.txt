@@ -1,8 +1,27 @@
-add_subdirectory(${CMAKE_SOURCE_DIR}/externals/catch2  /externals/catch2 EXCLUDE_FROM_ALL)
-
-add_executable(tests test_main.cpp)
-target_link_libraries(tests PRIVATE Catch2::Catch2WithMain chip8_lib)
-
-include(CTest)
+add_subdirectory(${CMAKE_SOURCE_DIR}/externals/catch2  ${CMAKE_BINARY_DIR}/externals/catch2 EXCLUDE_FROM_ALL)
 include(${CMAKE_SOURCE_DIR}/externals/catch2/extras/Catch.cmake)
-catch_discover_tests(tests)
+
+add_executable(UnitTests 
+                ${CMAKE_SOURCE_DIR}/tests/test_main.cpp
+                ${CMAKE_SOURCE_DIR}/tests/test_display.cpp
+                ${CMAKE_SOURCE_DIR}/tests/test_keyboard.cpp
+                ${CMAKE_SOURCE_DIR}/tests/test_proc.cpp
+                ${CMAKE_SOURCE_DIR}/tests/test_program.cpp
+            )
+target_link_libraries(UnitTests PRIVATE Catch2::Catch2WithMain chip8_lib)
+
+# catch_discover_tests(tests)
+include(CTest)
+catch_discover_tests(
+  UnitTests
+  TEST_PREFIX
+  "TEST."
+  REPORTER
+  XML
+  OUTPUT_DIR
+  .
+  OUTPUT_PREFIX
+  "TEST."
+  OUTPUT_SUFFIX
+  .xml
+)
