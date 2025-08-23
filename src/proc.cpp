@@ -16,18 +16,14 @@ Proc::Proc():
 {
 
 }
-[[nodiscard]] Proc::INSTRUCTION Proc::decode(const Proc::u16 instruction) const
+[[nodiscard]] Proc::INSTRUCTION Proc::decode(const u16 instruction) const
 {
-    const Proc::u8 opcode = (instruction & 0xf000) >> 12;
-    const Proc::u8 x      = (instruction & 0x0f00) >> 8;
-    const Proc::u8 y      = (instruction & 0x00f0) >> 4;
-    const Proc::u8 z      = (instruction & 0x000f);
-    return {opcode, x, y, z};
+    return {instruction};
 }
 
 void Proc::execute(const Proc::INSTRUCTION& instruction)
 {
-    const auto [opcode, x, y, z] = instruction;
+    const auto [opcode, x, y, z] = instruction.getData();
     switch(opcode)
     {
         case 0x0:
@@ -273,70 +269,150 @@ void Proc::reset()
 
 void Proc::handleUnknow(const INSTRUCTION& instru)
 {
-    std::println("unknow instruction ", instru[0], instru[1], instru[2], instru[4]);
+    std::println("unknow instruction ", instru.getInstruction());
 }
 void Proc::handle00E0(const INSTRUCTION& instruction)
 {
-
+    //clear display
+    std::println("command: CLS ", instruction.getInstruction());
+    this->_display = {0};
 }
+
 void Proc::handle00EE(const INSTRUCTION& instruction)
 {
-
+    //return function
+    std::println("command: RET ", instruction.getInstruction());
+    this->_PC = this->_stack.at(this->_SP);
+    this->_SP = this->_SP > 1 ? this->_SP - 1 : 0;
 }
 void Proc::handle1nnn(const INSTRUCTION& instruction)
 {
+    //jump to address
+    std::println("command: JP ADDR ", instruction.getInstruction());
+    const auto addr = instruction.getAddr();
+    this->_PC = addr < MEMORY_SIZE ? addr : _PC;
 
 }
 void Proc::handle2nnn(const INSTRUCTION& instruction)
 {
+    //call subroutine
+    std::println("command: CALL ADDR ", instruction.getInstruction());
+    const auto addr = instruction.getAddr();
+    this->_SP += 1;
+    this->_stack.at(this->_SP) = this->_PC;
+    this->_PC = addr;
 
 }
 void Proc::handle3xkk(const INSTRUCTION& instruction)
 {
+    // compare equ and skip
+    std::println("command: SE Vx, byte ", instruction.getInstruction());
+    const auto x = instruction.getX();
+    const auto kk = instruction.getByte();
+    const auto regVx = this->_regV.at(x);
+    this->_PC = regVx == kk ? this->_PC + 2 : this->_PC;
 
 }
 void Proc::handle4xkk(const INSTRUCTION& instruction)
 {
-
+    // compare diff and skip
+    std::println("command: SNE Vx, byte ", instruction.getInstruction());
+    const auto x = instruction.getX();
+    const auto kk = instruction.getByte();
+    const auto regVx = this->_regV.at(x);
+    this->_PC = regVx != kk ? this->_PC + 2 : this->_PC;
 }
+
 void Proc::handle5xy0(const INSTRUCTION& instruction)
 {
+    // compare diff and skip
+    std::println("command: SE Vx, Vy ", instruction.getInstruction());
+    const auto x = instruction.getX();
+    const auto y = instruction.getY();
+    const auto regVx = this->_regV.at(x);
+    const auto regVy = this->_regV.at(y);
+    this->_PC = regVx == regVy ? this->_PC + 2 : this->_PC;
 
 }
 void Proc::handle6xkk(const INSTRUCTION& instruction)
 {
+    // Load register
+    std::println("command: LD Vx, byte ", instruction.getInstruction());
+    const auto data = instruction.getByte();
+    const auto x = instruction.getX();
+    this->_regV.at(x) = data;
 
 }
 void Proc::handle7xkk(const INSTRUCTION& instruction)
 {
+    // ADD register
+    std::println("command: ADD Vx, byte ", instruction.getInstruction());
+    const auto data = instruction.getByte();
+    const auto x = instruction.getX();
+    this->_regV.at(x) += data;
+
+}
+void Proc::handle8xy0(const INSTRUCTION& instruction)
+{
+    // Load register
+    std::println("command: LD Vx, Vy ", instruction.getInstruction());
+    const auto y = instruction.getY();
+    const auto x = instruction.getX();
+    this->_regV.at(x) = this->_regV.at(y);
 
 }
 void Proc::handle8xy1(const INSTRUCTION& instruction)
 {
+    // OR register
+    std::println("command: OR Vx, Vy ", instruction.getInstruction());
+    const auto y = instruction.getY();
+    const auto x = instruction.getX();
+    this->_regV.at(x) |= this->_regV.at(y);
 
 }
 void Proc::handle8xy2(const INSTRUCTION& instruction)
 {
+    // AND register
+    std::println("command: AND Vx, Vy ", instruction.getInstruction());
+    const auto y = instruction.getY();
+    const auto x = instruction.getX();
+    this->_regV.at(x) &= this->_regV.at(y);
+
+}
+void Proc::handle8xy3(const INSTRUCTION& instruction)
+{
+    // XOR register
+    std::println("command: AND Vx, Vy ", instruction.getInstruction());
+    const auto y = instruction.getY();
+    const auto x = instruction.getX();
+    this->_regV.at(x) ^= this->_regV.at(y);
 
 }
 void Proc::handle8xy4(const INSTRUCTION& instruction)
 {
+    // ADD register
+    std::println("command: AND Vx, Vy ", instruction.getInstruction());
+    const auto y = instruction.getY();
+    const auto x = instruction.getX();
+    this->_regV.at(x) += this->_regV.at(y);
 
 }
 void Proc::handle8xy5(const INSTRUCTION& instruction)
 {
+    // SUB register
+    std::println("command: SUB Vx, Vy ", instruction.getInstruction());
+    const auto y = instruction.getY();
+    const auto x = instruction.getX();
+    this->_regV.at(x) -= this->_regV.at(y);
 
 }
 void Proc::handle8xy6(const INSTRUCTION& instruction)
 {
-
-}
-void Proc::handle8xy7(const INSTRUCTION& instruction)
-{
-
-}
-void Proc::handle8xyE(const INSTRUCTION& instruction)
-{
+    // SUB register
+    std::println("command: SUB Vx, Vy ", instruction.getInstruction());
+    const auto y = instruction.getY();
+    const auto x = instruction.getX();
+    this->_regV.at(x) -= this->_regV.at(y);
 
 }
 void Proc::handle9xy0(const INSTRUCTION& instruction)

@@ -10,16 +10,33 @@ constexpr size_t STACK_SIZE = 16;
 constexpr size_t DISPLAY_SIZE = 64 * 32;
 constexpr size_t GENERAL_REG_SIZE = 16;
 constexpr size_t MEMORY_SIZE = 4096;
+using u8 = std::uint8_t;
+using u16 = std::uint16_t;
+
+struct Instruction
+{
+    Instruction(const u16 instruction):_instruction{instruction}{}
+    [[nodiscard]] inline u8     getNible() const noexcept{return _instruction & 0x000f;}
+    [[nodiscard]] inline u8     getOpCode() const noexcept{return (_instruction & 0xf000) >> 12;}
+    [[nodiscard]] inline u8     getX() const noexcept    {return (_instruction & 0x0f00) >> 8;}
+    [[nodiscard]] inline u8     getY() const noexcept    {return (_instruction & 0x00f0) >> 4;}
+    [[nodiscard]] inline u8     getByte() const noexcept {return (_instruction & 0x00ff);}
+    [[nodiscard]] inline u16    getAddr() const noexcept {return (_instruction & 0x0fff);}
+    [[nodiscard]] inline u16    getInstruction() const noexcept {return _instruction;}
+    [[nodiscard]] inline const std::array<u8, 4> getData() const noexcept {return {getOpCode(), getX(), getY(), getNible()};}
+
+    private:
+    u16 _instruction;
+
+};
 
 class Proc{
     public:
-    using u8 = std::uint8_t;
-    using u16 = std::uint16_t;
     using STACK_ARR = std::array<u16, STACK_SIZE>;
     using REG_ARR = std::array<u8, GENERAL_REG_SIZE>;
     using DISPLAY_ARR = std::array<u8, DISPLAY_SIZE>;
     using MEMORY_ARR = std::array<u8, MEMORY_SIZE>;
-    using INSTRUCTION = std::array<u8, 4>;
+    using INSTRUCTION = Instruction;
 
     public:
     Proc();
@@ -28,17 +45,17 @@ class Proc{
     void reset();
     [[nodiscard]] INSTRUCTION decode(const u16 instruction) const;
 
-    [[nodiscard]] inline const u8&            getDelayReg()   const {return _delayReg;};
-    [[nodiscard]] inline const u8&            getTimerReg()   const {return _timerReg;};
-    [[nodiscard]] inline const u8&            getSP()         const {return _SP;};
-    [[nodiscard]] inline const u16&           getPC()         const {return _PC;};
-    [[nodiscard]] inline const u16&           getRegI()       const {return _regI;};
+    [[nodiscard]] inline const u8&            getDelayReg()   const noexcept {return _delayReg;};
+    [[nodiscard]] inline const u8&            getTimerReg()   const noexcept {return _timerReg;};
+    [[nodiscard]] inline const u8&            getSP()         const noexcept {return _SP;};
+    [[nodiscard]] inline const u16&           getPC()         const noexcept {return _PC;};
+    [[nodiscard]] inline const u16&           getRegI()       const noexcept {return _regI;};
     [[nodiscard]] inline const u8&            getVReg(const size_t index)     const {return _regV.at(index);};
-    [[nodiscard]] inline const REG_ARR&       getAllVReg()    const {return _regV;};
+    [[nodiscard]] inline const REG_ARR&       getAllVReg()    const noexcept {return _regV;};
     [[nodiscard]] inline const u16&           getStack(const size_t index)    const {return _stack.at(index);};
-    [[nodiscard]] inline const STACK_ARR&     getAllStack()   const {return _stack;};
-    [[nodiscard]] inline const DISPLAY_ARR&   getDisplay()    const {return _display;};
-    [[nodiscard]] inline const MEMORY_ARR&    getMemory()     const {return _memory;};
+    [[nodiscard]] inline const STACK_ARR&     getAllStack()   const noexcept {return _stack;};
+    [[nodiscard]] inline const DISPLAY_ARR&   getDisplay()    const noexcept {return _display;};
+    [[nodiscard]] inline const MEMORY_ARR&    getMemory()     const noexcept {return _memory;};
 
     private:
     u8          _delayReg;
@@ -63,6 +80,7 @@ class Proc{
     void handle5xy0(const INSTRUCTION&);
     void handle6xkk(const INSTRUCTION&);
     void handle7xkk(const INSTRUCTION&);
+    void handle8xy0(const INSTRUCTION&);
     void handle8xy1(const INSTRUCTION&);
     void handle8xy2(const INSTRUCTION&);
     void handle8xy4(const INSTRUCTION&);
