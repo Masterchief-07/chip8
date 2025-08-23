@@ -12,6 +12,8 @@ add_library(${PROJECT_NAME}
                     ${CMAKE_SOURCE_DIR}/src/chip8.cpp
                     ${CMAKE_SOURCE_DIR}/src/display.cpp
                     ${CMAKE_SOURCE_DIR}/src/program.cpp
+                    ${CMAKE_SOURCE_DIR}/src/keyboard.cpp
+                    ${CMAKE_SOURCE_DIR}/src/proc.cpp
             )  
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
