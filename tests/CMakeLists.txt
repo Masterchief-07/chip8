@@ -1,3 +1,4 @@
+enable_testing()
 add_subdirectory(${CMAKE_SOURCE_DIR}/externals/catch2  ${CMAKE_BINARY_DIR}/externals/catch2 EXCLUDE_FROM_ALL)
 include(${CMAKE_SOURCE_DIR}/externals/catch2/extras/Catch.cmake)
 
@@ -11,5 +12,15 @@ add_executable(UnitTests
 target_link_libraries(UnitTests PRIVATE Catch2::Catch2WithMain chip8_lib)
 
 # catch_discover_tests(tests)
-include(CTest)
-catch_discover_tests(UnitTests)
+catch_discover_tests(
+  UnitTests
+  TEST_PREFIX
+  "unittests."
+  REPORTER
+  XML
+  OUTPUT_DIR
+  .
+  OUTPUT_PREFIX
+  "unittests."
+  OUTPUT_SUFFIX
+  .xml)

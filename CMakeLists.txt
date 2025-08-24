@@ -22,4 +22,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
 add_definitions("-Wall" "-Wpedantic" "-Werror")
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/examples)
+
+include(CTest)
 add_subdirectory(${CMAKE_SOURCE_DIR}/tests)
