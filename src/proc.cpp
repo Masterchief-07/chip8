@@ -1,6 +1,7 @@
 #include "chip8/proc.hpp"
 #include <print>
 #include <cstdlib>
+#include <bitset>
 
 using namespace CHIP8;
 
@@ -44,6 +45,10 @@ void Proc::setKeyPressed(const u8 key)
 {
     this->_isKeyPressed = true;
     this->_keyValue = key;
+}
+void Proc::setProgramToMemory(const MEMORY_ARR& data)
+{
+    this->_memory = data;
 }
 
 void Proc::execute(const Proc::INSTRUCTION& instruction)
@@ -661,12 +666,20 @@ void Proc::handleFx65(const INSTRUCTION& instruction)
 
 void Proc::writeDisplay(const u8 posX, const u8 posY, const u16 memory_pos, const u8 size)
 {
-    //todo
-    for(size_t i=0; i < size; i++)
+    const u16 regI = this->_regI;
+    std::println("writeDisplay: regI:{:#0x} posX:{} posY:{} memory_pos:{} size:{}", regI, posX, posY, memory_pos, size);
+    for(size_t i = 0, y = posY; i < size && y < DISPLAY_Y; i++, y++)
     {
-        const auto position = posY * DISPLAY_X + posX + i;
-        std::ignore = position;
-
+        const u8 data = this->_memory.at(regI + i);
+        const auto databits = std::bitset<8>{data};
+        for(size_t j = 7, x = posX; j > 0 && x < DISPLAY_X; j++, x++)
+        {
+            const size_t position = y * DISPLAY_Y + x;
+            u8& displayValue = this->_display.at(position);
+            displayValue ^= databits.test(j);
+            std::println("writeDisplay: data:{:#0x} databits:{:#0b} position:{} displayValue:{} i:{} y:{} j:{} x:{}"
+                                        , data, data, position, displayValue, i, y, j, x);
+        }
     }
 }
 

@@ -416,6 +416,12 @@ TEST_CASE("TEST_PROC_KEYBOARD", "[PROCESSOR]"){
 
 TEST_CASE("TEST_PROC_DISPLAY", "[PROCESSOR]"){
     CHIP8::Proc proc{};
+    CHIP8::Proc::MEMORY_ARR arr{0};
+    //0
+    arr.at(0) = 0xf0; arr.at(1) = 0x90; arr.at(2) = 0x90; arr.at(3) = 0x90; arr.at(4) = 0xf0;
+    //1
+    arr.at(5) = 0x20; arr.at(6) = 0x60; arr.at(7) = 0x20; arr.at(8) = 0x20; arr.at(9) = 0x70;
+    proc.setProgramToMemory(arr);
     // const auto& display = proc.getDisplay();
     // const auto& regV = proc.getAllVReg();
     // const auto& regI = proc.getRegI();
@@ -423,8 +429,8 @@ TEST_CASE("TEST_PROC_DISPLAY", "[PROCESSOR]"){
     // const auto& SP = proc.getSP();
     // const auto& delayTimer = proc.getDelayReg();
     // const auto& soundTimer = proc.getSoundReg();
-    SECTION("CLS COMMAND"){
-        proc.execute(0x00E0);
+    SECTION("Dxyn, DRAW Vx, Vy, n COMMAND"){
+        proc.execute(0xD01A);
     }
 }
 

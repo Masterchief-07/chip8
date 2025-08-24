@@ -46,6 +46,7 @@ class Proc{
     void execute(const INSTRUCTION& instruction);
     void reset();
     void setKeyPressed(const u8 key);
+    void setProgramToMemory(const MEMORY_ARR& data);
     [[nodiscard]] u16 fetch(const u16 memoryLocation) const;
     [[nodiscard]] INSTRUCTION decode(const u16 instruction) const;
 
