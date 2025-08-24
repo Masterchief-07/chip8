@@ -7,7 +7,9 @@
 namespace CHIP8{
 
 constexpr size_t STACK_SIZE = 16;
-constexpr size_t DISPLAY_SIZE = 64 * 32;
+constexpr size_t DISPLAY_X = 64;
+constexpr size_t DISPLAY_Y = 32;
+constexpr size_t DISPLAY_SIZE = DISPLAY_X * DISPLAY_Y;
 constexpr size_t GENERAL_REG_SIZE = 16;
 constexpr size_t MEMORY_SIZE = 4096;
 using u8 = std::uint8_t;
@@ -43,10 +45,14 @@ class Proc{
 
     void execute(const INSTRUCTION& instruction);
     void reset();
+    void setKeyPressed(const u8 key);
+    [[nodiscard]] u16 fetch(const u16 memoryLocation) const;
     [[nodiscard]] INSTRUCTION decode(const u16 instruction) const;
 
+    [[nodiscard]] inline const bool&          isKeyPressed()  const noexcept {return _isKeyPressed;};
+    [[nodiscard]] inline const u8&            getKeyPressed() const noexcept {return _keyValue;};
     [[nodiscard]] inline const u8&            getDelayReg()   const noexcept {return _delayReg;};
-    [[nodiscard]] inline const u8&            getTimerReg()   const noexcept {return _timerReg;};
+    [[nodiscard]] inline const u8&            getSoundReg()   const noexcept {return _soundReg;};
     [[nodiscard]] inline const u8&            getSP()         const noexcept {return _SP;};
     [[nodiscard]] inline const u16&           getPC()         const noexcept {return _PC;};
     [[nodiscard]] inline const u16&           getRegI()       const noexcept {return _regI;};
@@ -58,8 +64,10 @@ class Proc{
     [[nodiscard]] inline const MEMORY_ARR&    getMemory()     const noexcept {return _memory;};
 
     private:
+    bool        _isKeyPressed;
+    u8          _keyValue;
     u8          _delayReg;
-    u8          _timerReg;
+    u8          _soundReg;
     u8          _SP;
     u16         _PC;
     u16         _regI;
@@ -69,7 +77,8 @@ class Proc{
     MEMORY_ARR  _memory;
 
     private:
-
+    void writeDisplay(const u8 posX, const u8 posY, const u16 memory_pos, const u8 size);
+    u16 getSpriteMemoryLocation(const u8 number);
     void handleUnknow(const INSTRUCTION&);
     void handle00E0(const INSTRUCTION&);
     void handle00EE(const INSTRUCTION&);
@@ -83,6 +92,7 @@ class Proc{
     void handle8xy0(const INSTRUCTION&);
     void handle8xy1(const INSTRUCTION&);
     void handle8xy2(const INSTRUCTION&);
+    void handle8xy3(const INSTRUCTION&);
     void handle8xy4(const INSTRUCTION&);
     void handle8xy5(const INSTRUCTION&);
     void handle8xy6(const INSTRUCTION&);
