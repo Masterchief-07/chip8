@@ -422,7 +422,7 @@ TEST_CASE("TEST_PROC_DISPLAY", "[PROCESSOR]"){
     //1
     arr.at(5) = 0x20; arr.at(6) = 0x60; arr.at(7) = 0x20; arr.at(8) = 0x20; arr.at(9) = 0x70;
     proc.setProgramToMemory(arr);
-    // const auto& display = proc.getDisplay();
+    const auto& display = proc.getDisplay();
     // const auto& regV = proc.getAllVReg();
     // const auto& regI = proc.getRegI();
     // const auto& PC = proc.getPC();
@@ -431,6 +431,13 @@ TEST_CASE("TEST_PROC_DISPLAY", "[PROCESSOR]"){
     // const auto& soundTimer = proc.getSoundReg();
     SECTION("Dxyn, DRAW Vx, Vy, n COMMAND"){
         proc.execute(0xD01A);
+
+        std::array<size_t, 32> targets_position = {0,1,2,3,4,5,6,7, 64,65,66,67,68,69,70,71, 128,129,130,131,132,133,134,135, 192,193,194,195,196,197,198,199};
+        std::array<CHIP8::u8, 32> targets = {1,1,1,1,0,0,0,0, 1,0,0,1,0,0,0,0, 1,0,0,1,0,0,0,0, 1,0,0,1,0,0,0,0};
+
+        for(size_t i = 0; i < targets_position.size(); i++)
+            REQUIRE(display.at(targets_position.at(i)) == targets.at(i));
+
     }
 }
 

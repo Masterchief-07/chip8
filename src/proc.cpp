@@ -672,12 +672,12 @@ void Proc::writeDisplay(const u8 posX, const u8 posY, const u16 memory_pos, cons
     {
         const u8 data = this->_memory.at(regI + i);
         const auto databits = std::bitset<8>{data};
-        for(size_t j = 7, x = posX; j > 0 && x < DISPLAY_X; j++, x++)
+        for(size_t j = 0, x = posX; j < 8 && x < DISPLAY_X; j++, x++)
         {
-            const size_t position = y * DISPLAY_Y + x;
+            const size_t position = y * DISPLAY_X + x;
             u8& displayValue = this->_display.at(position);
-            displayValue ^= databits.test(j);
-            std::println("writeDisplay: data:{:#0x} databits:{:#0b} position:{} displayValue:{} i:{} y:{} j:{} x:{}"
+            displayValue ^= databits.test(7 - j);
+            std::println("writeDisplay: data:{:#0x} databits:{:#08b} position:{} displayValue:{} i:{} y:{} j:{} x:{}"
                                         , data, data, position, displayValue, i, y, j, x);
         }
     }
