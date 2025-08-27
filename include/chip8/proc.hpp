@@ -1,6 +1,6 @@
 /*PROGRAM PROCESSOR*/
 #pragma once
-#include <cstdint>
+#include "chip8/common.hpp"
 #include <cstddef>
 #include <array>
 
@@ -12,8 +12,6 @@ constexpr size_t DISPLAY_Y = 32;
 constexpr size_t DISPLAY_SIZE = DISPLAY_X * DISPLAY_Y;
 constexpr size_t GENERAL_REG_SIZE = 16;
 constexpr size_t MEMORY_SIZE = 4096;
-using u8 = std::uint8_t;
-using u16 = std::uint16_t;
 
 struct Instruction
 {
@@ -117,6 +115,8 @@ class Proc{
     void handleFx33(const INSTRUCTION&);
     void handleFx55(const INSTRUCTION&);
     void handleFx65(const INSTRUCTION&);
+
+    void logState();
 };
 
 }
