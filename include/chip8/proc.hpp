@@ -45,9 +45,10 @@ class Proc{
 
     void execute(const INSTRUCTION& instruction);
     void reset();
+    void setPC(const u16 key);
     void setKeyPressed(const u8 key);
     void setProgramToMemory(const MEMORY_ARR& data);
-    [[nodiscard]] u16 fetch(const u16 memoryLocation) const;
+    [[nodiscard]] u16 fetch() const;
     [[nodiscard]] INSTRUCTION decode(const u16 instruction) const;
 
     [[nodiscard]] inline const bool&          isKeyPressed()  const noexcept {return _isKeyPressed;};
@@ -78,6 +79,7 @@ class Proc{
     MEMORY_ARR  _memory;
 
     private:
+    void incrementPC();
     void writeDisplay(const u8 posX, const u8 posY, const u16 memory_pos, const u8 size);
     u16 getSpriteMemoryLocation(const u8 number);
     void handleUnknow(const INSTRUCTION&);

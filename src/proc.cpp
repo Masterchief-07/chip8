@@ -36,11 +36,19 @@ void Proc::reset()
     _keyValue = {0};
 }
 
+u16 Proc::fetch() const
+{
+    return this->_memory[this->_PC] << 8 | this->_memory[this->_PC+1];
+}
 [[nodiscard]] Proc::INSTRUCTION Proc::decode(const u16 instruction) const
 {
     return {instruction};
 }
 
+void Proc::setPC(const u16 key)
+{
+    this->_PC = key;
+}
 void Proc::setKeyPressed(const u8 key)
 {
     this->_isKeyPressed = true;
@@ -296,7 +304,7 @@ void Proc::handle00E0(const INSTRUCTION& instruction)
     std::println("command: CLS {:#0x}", instruction.getInstruction());
     this->_display = {0};
     //next instruction
-    this->_PC +=1;
+    this->incrementPC();
 }
 
 void Proc::handle00EE(const INSTRUCTION& instruction)
@@ -311,7 +319,7 @@ void Proc::handle1nnn(const INSTRUCTION& instruction)
     //jump to address
     std::println("command: JP ADDR {:#0x}", instruction.getInstruction());
     const auto addr = instruction.getAddr();
-    this->_PC = addr < MEMORY_SIZE ? addr : _PC + 1;
+    this->_PC = addr < MEMORY_SIZE ? addr : _PC + 2;
 
 }
 void Proc::handle2nnn(const INSTRUCTION& instruction)
@@ -331,7 +339,7 @@ void Proc::handle3xkk(const INSTRUCTION& instruction)
     const auto x = instruction.getX();
     const auto kk = instruction.getByte();
     const auto regVx = this->_regV.at(x);
-    this->_PC = regVx == kk ? this->_PC + 2 : this->_PC + 1;
+    this->_PC = regVx == kk ? this->_PC + 4 : this->_PC + 2;
 
 }
 void Proc::handle4xkk(const INSTRUCTION& instruction)
@@ -341,7 +349,7 @@ void Proc::handle4xkk(const INSTRUCTION& instruction)
     const auto x = instruction.getX();
     const auto kk = instruction.getByte();
     const auto regVx = this->_regV.at(x);
-    this->_PC = regVx != kk ? this->_PC + 2 : this->_PC + 1;
+    this->_PC = regVx != kk ? this->_PC + 4 : this->_PC + 2;
 }
 
 void Proc::handle5xy0(const INSTRUCTION& instruction)
@@ -352,7 +360,7 @@ void Proc::handle5xy0(const INSTRUCTION& instruction)
     const auto y = instruction.getY();
     const auto regVx = this->_regV.at(x);
     const auto regVy = this->_regV.at(y);
-    this->_PC = regVx == regVy ? this->_PC + 2 : this->_PC + 1;
+    this->_PC = regVx == regVy ? this->_PC + 4 : this->_PC + 2;
 
 }
 void Proc::handle6xkk(const INSTRUCTION& instruction)
@@ -363,7 +371,7 @@ void Proc::handle6xkk(const INSTRUCTION& instruction)
     const auto x = instruction.getX();
     this->_regV.at(x) = data;
     //next instruction
-    this->_PC +=1;
+    this->incrementPC();
 
 }
 void Proc::handle7xkk(const INSTRUCTION& instruction)
@@ -374,7 +382,7 @@ void Proc::handle7xkk(const INSTRUCTION& instruction)
     const auto x = instruction.getX();
     this->_regV.at(x) += data;
     //next instruction
-    this->_PC +=1;
+    this->incrementPC();
 
 }
 void Proc::handle8xy0(const INSTRUCTION& instruction)
@@ -385,7 +393,7 @@ void Proc::handle8xy0(const INSTRUCTION& instruction)
     const auto x = instruction.getX();
     this->_regV.at(x) = this->_regV.at(y);
     //next instruction
-    this->_PC +=1;
+    this->incrementPC();
 
 }
 void Proc::handle8xy1(const INSTRUCTION& instruction)
@@ -396,7 +404,7 @@ void Proc::handle8xy1(const INSTRUCTION& instruction)
     const auto x = instruction.getX();
     this->_regV.at(x) |= this->_regV.at(y);
     //next instruction
-    this->_PC +=1;
+    this->incrementPC();
 
 }
 void Proc::handle8xy2(const INSTRUCTION& instruction)
@@ -407,7 +415,7 @@ void Proc::handle8xy2(const INSTRUCTION& instruction)
     const auto x = instruction.getX();
     this->_regV.at(x) &= this->_regV.at(y);
     //next instruction
-    this->_PC +=1;
+    this->incrementPC();
 
 }
 void Proc::handle8xy3(const INSTRUCTION& instruction)
@@ -418,7 +426,7 @@ void Proc::handle8xy3(const INSTRUCTION& instruction)
     const auto x = instruction.getX();
     this->_regV.at(x) ^= this->_regV.at(y);
     //next instruction
-    this->_PC +=1;
+    this->incrementPC();
 
 }
 void Proc::handle8xy4(const INSTRUCTION& instruction)
@@ -429,7 +437,7 @@ void Proc::handle8xy4(const INSTRUCTION& instruction)
     const auto x = instruction.getX();
     this->_regV.at(x) += this->_regV.at(y);
     //next instruction
-    this->_PC +=1;
+    this->incrementPC();
 
 }
 void Proc::handle8xy5(const INSTRUCTION& instruction)
@@ -440,7 +448,7 @@ void Proc::handle8xy5(const INSTRUCTION& instruction)
     const auto x = instruction.getX();
     this->_regV.at(x) -= this->_regV.at(y);
     //next instruction
-    this->_PC +=1;
+    this->incrementPC();
 
 }
 void Proc::handle8xy6(const INSTRUCTION& instruction)
@@ -452,7 +460,7 @@ void Proc::handle8xy6(const INSTRUCTION& instruction)
     this->_regV.at(x) = value >> 1; 
     this->_regV.at(15) = value & 0b00000001; //Vf
     //next instruction
-    this->_PC +=1;
+    this->incrementPC();
 }
 void Proc::handle8xy7(const INSTRUCTION& instruction)
 {
@@ -462,7 +470,7 @@ void Proc::handle8xy7(const INSTRUCTION& instruction)
     const auto x = instruction.getX();
     this->_regV.at(x) = this->_regV.at(y) - this->_regV.at(x);
     //next instruction
-    this->_PC +=1;
+    this->incrementPC();
 }
 void Proc::handle8xyE(const INSTRUCTION& instruction)
 {
@@ -473,7 +481,7 @@ void Proc::handle8xyE(const INSTRUCTION& instruction)
     this->_regV.at(x) = value << 1; 
     this->_regV.at(15) = (value & 0b10000000) >> 8; //Vf
     //next instruction
-    this->_PC +=1;
+    this->incrementPC();
 }
 void Proc::handle9xy0(const INSTRUCTION& instruction)
 {
@@ -483,7 +491,7 @@ void Proc::handle9xy0(const INSTRUCTION& instruction)
     const auto y = instruction.getY();
     const auto regVx = this->_regV.at(x);
     const auto regVy = this->_regV.at(y);
-    this->_PC = regVx != regVy ? this->_PC + 2 : this->_PC + 1;
+    this->_PC = regVx != regVy ? this->_PC + 4 : this->_PC + 2;
 
 }
 void Proc::handleAnnn(const INSTRUCTION& instruction)
@@ -493,7 +501,7 @@ void Proc::handleAnnn(const INSTRUCTION& instruction)
     const auto addr = instruction.getAddr();
     this->_regI = addr;
     //next instruction
-    this->_PC +=1;
+    this->incrementPC();
 
 }
 void Proc::handleBnnn(const INSTRUCTION& instruction)
@@ -515,7 +523,7 @@ void Proc::handleCxkk(const INSTRUCTION& instruction)
     auto& Vx = this->_regV.at(x);
     Vx = random + value;
     //next instruction
-    this->_PC +=1;
+    this->incrementPC();
 
 }
 void Proc::handleDxyn(const INSTRUCTION& instruction)
@@ -530,7 +538,7 @@ void Proc::handleDxyn(const INSTRUCTION& instruction)
     const auto memoryPosition = this->getRegI();
     this->writeDisplay(Vx, Vy, memoryPosition, n);
     //next instruction
-    this->_PC +=1;
+    this->incrementPC();
 }
 void Proc::handleEx9E(const INSTRUCTION& instruction)
 {
@@ -539,9 +547,8 @@ void Proc::handleEx9E(const INSTRUCTION& instruction)
     const auto x = instruction.getX();
     const auto Vx = this->_regV.at(x);
     if(_isKeyPressed && Vx != this->_keyValue)
-        this->_PC += 2;
-    else
-        this->_PC += 1;
+        this->incrementPC();
+    this->incrementPC();
 }
 void Proc::handleExA1(const INSTRUCTION& instruction)
 {
@@ -550,9 +557,8 @@ void Proc::handleExA1(const INSTRUCTION& instruction)
     const auto x = instruction.getX();
     const auto Vx = this->_regV.at(x);
     if(_isKeyPressed && Vx == this->_keyValue)
-        this->_PC += 2;
-    else
-        this->_PC += 1;
+        this->incrementPC();
+    this->incrementPC();
 }
 void Proc::handleFx07(const INSTRUCTION& instruction)
 {
@@ -562,7 +568,7 @@ void Proc::handleFx07(const INSTRUCTION& instruction)
     const auto Dt = this->_delayReg;
     auto& Vx = this->_regV.at(x);
     Vx = Dt;
-    this->_PC += 1; //next instruction
+    this->incrementPC(); //next instruction
 }
 void Proc::handleFx0A(const INSTRUCTION& instruction)
 {
@@ -573,7 +579,7 @@ void Proc::handleFx0A(const INSTRUCTION& instruction)
         return;
     auto& Vx = this->_regV.at(x);
     Vx = this->_keyValue;
-    this->_PC += 1; //next instruction
+    this->incrementPC(); //next instruction
 
 }
 void Proc::handleFx15(const INSTRUCTION& instruction)
@@ -584,7 +590,7 @@ void Proc::handleFx15(const INSTRUCTION& instruction)
     const auto Vx = this->_regV.at(x);
     auto& Dt = this->_delayReg;
     Dt = Vx;
-    this->_PC += 1; //next instruction
+    this->incrementPC(); //next instruction
 
 }
 void Proc::handleFx18(const INSTRUCTION& instruction)
@@ -595,7 +601,7 @@ void Proc::handleFx18(const INSTRUCTION& instruction)
     const auto Vx = this->_regV.at(x);
     auto& St = this->_soundReg;
     St = Vx;
-    this->_PC += 1; //next instruction
+    this->incrementPC(); //next instruction
 
 }
 void Proc::handleFx1E(const INSTRUCTION& instruction)
@@ -605,7 +611,7 @@ void Proc::handleFx1E(const INSTRUCTION& instruction)
     const auto x = instruction.getX();
     const auto Vx = this->_regV.at(x);
     this->_regI += Vx;
-    this->_PC += 1; //next instruction
+    this->incrementPC(); //next instruction
 }
 void Proc::handleFx29(const INSTRUCTION& instruction)
 {
@@ -615,7 +621,7 @@ void Proc::handleFx29(const INSTRUCTION& instruction)
     const auto Vx = this->_regV.at(x);
     auto& I = this->_regI;
     I = this->getSpriteMemoryLocation(Vx);
-    this->_PC += 1; //next instruction
+    this->incrementPC(); //next instruction
 
 }
 void Proc::handleFx33(const INSTRUCTION& instruction)
@@ -634,7 +640,7 @@ void Proc::handleFx33(const INSTRUCTION& instruction)
     this->_memory.at(regI + 1)  = val2;
     this->_memory.at(regI + 2)  = val1;
     //next instruction
-    this->_PC +=1;
+    this->incrementPC();
 }
 void Proc::handleFx55(const INSTRUCTION& instruction)
 {
@@ -647,7 +653,7 @@ void Proc::handleFx55(const INSTRUCTION& instruction)
         this->_memory.at(regI + i) = this->_regV.at(i);
     }
     //next instruction
-    this->_PC +=1;
+    this->incrementPC();
 }
 void Proc::handleFx65(const INSTRUCTION& instruction)
 {
@@ -660,7 +666,7 @@ void Proc::handleFx65(const INSTRUCTION& instruction)
         this->_regV.at(i) = this->_memory.at(regI + i);
     }
     //next instruction
-    this->_PC +=1;
+    this->incrementPC();
 
 }
 
@@ -688,4 +694,8 @@ u16 Proc::getSpriteMemoryLocation(const u8 number)
     //todo
     std::ignore = number;
     return 0;
+}
+
+void Proc::incrementPC(){
+    this->_PC += 2;
 }

@@ -72,7 +72,7 @@ TEST_CASE("TEST_PROC_EXECUTION", "[PROCESSOR]"){
         proc.execute(0x611E);
         proc.execute(value);
         REQUIRE(regV.at(1) == 0x1E);
-        REQUIRE(PC == 3);
+        REQUIRE(PC == 6);
     }
     SECTION("3xkk-2 SE Vx, byte COMMAND"){
         const CHIP8::u16 x = 0xf1ff;
@@ -81,7 +81,7 @@ TEST_CASE("TEST_PROC_EXECUTION", "[PROCESSOR]"){
         proc.execute(0x611E);
         proc.execute(value);
         REQUIRE(regV.at(1) == 0x1E);
-        REQUIRE(PC == 2);
+        REQUIRE(PC == 4);
     }
     SECTION("4xkk SNE Vx, byte COMMAND"){
         const CHIP8::u16 x = 0xf1ff;
@@ -90,7 +90,7 @@ TEST_CASE("TEST_PROC_EXECUTION", "[PROCESSOR]"){
         proc.execute(0x611E);
         proc.execute(value);
         REQUIRE(regV.at(1) == 0x1E);
-        REQUIRE(PC == 2);
+        REQUIRE(PC == 4);
     }
     SECTION("4xkk-2 SNE Vx, byte COMMAND"){
         const CHIP8::u16 x = 0xf1ff;
@@ -99,7 +99,7 @@ TEST_CASE("TEST_PROC_EXECUTION", "[PROCESSOR]"){
         proc.execute(0x611E);
         proc.execute(value);
         REQUIRE(regV.at(1) == 0x1E);
-        REQUIRE(PC == 3);
+        REQUIRE(PC == 6);
     }
     SECTION("5xy0 SE Vx, Vy COMMAND"){
         const CHIP8::u16 command = 0x5010;
@@ -109,7 +109,7 @@ TEST_CASE("TEST_PROC_EXECUTION", "[PROCESSOR]"){
         proc.execute(value);
         REQUIRE(regV.at(1) == 0x1E);
         REQUIRE(regV.at(0) == 0x1E);
-        REQUIRE(PC == 4);
+        REQUIRE(PC == 8);
     }
     SECTION("5xy0-2 SE Vx, Vy COMMAND"){
         const CHIP8::u16 command = 0x5010;
@@ -119,7 +119,7 @@ TEST_CASE("TEST_PROC_EXECUTION", "[PROCESSOR]"){
         proc.execute(value);
         REQUIRE(regV.at(1) == 0x1E);
         REQUIRE(regV.at(0) == 0x1F);
-        REQUIRE(PC == 3);
+        REQUIRE(PC == 6);
     }
     SECTION("6xkk SET Vx COMMAND"){
         for(CHIP8::u16 i = 0; i < regV.size(); i++)
@@ -272,7 +272,7 @@ TEST_CASE("TEST_PROC_EXECUTION", "[PROCESSOR]"){
         proc.execute(value);
         REQUIRE(regV.at(1) == 0x1E);
         REQUIRE(regV.at(0) == 0x1E);
-        REQUIRE(PC == 3);
+        REQUIRE(PC == 6);
     }
     SECTION("9xy0-2 SNE Vx, Vy COMMAND"){
         const CHIP8::u16 command = 0x9010;
@@ -282,7 +282,7 @@ TEST_CASE("TEST_PROC_EXECUTION", "[PROCESSOR]"){
         proc.execute(value);
         REQUIRE(regV.at(1) == 0x1E);
         REQUIRE(regV.at(0) == 0x1F);
-        REQUIRE(PC == 4);
+        REQUIRE(PC == 8);
     }
     SECTION("Annn LD I, addr COMMAND"){
         const CHIP8::u16 addr = 0xfdfe;
@@ -368,7 +368,7 @@ TEST_CASE("TEST_PROC_KEYBOARD", "[PROCESSOR]"){
         REQUIRE(isKeyPressed == true);
         REQUIRE(keyPressed == 0x02);
         proc.execute(0xEE9E);
-        REQUIRE(PC == 3);
+        REQUIRE(PC == 6);
     }
     SECTION("Ex9E-2 SKP Vx COMMAND"){
         proc.execute(0x6E01);
@@ -376,7 +376,7 @@ TEST_CASE("TEST_PROC_KEYBOARD", "[PROCESSOR]"){
         REQUIRE(isKeyPressed == true);
         REQUIRE(keyPressed == 0x01);
         proc.execute(0xEE9E);
-        REQUIRE(PC == 2);
+        REQUIRE(PC == 4);
     }
     SECTION("ExA1 SKP Vx COMMAND"){
         proc.execute(0x6E01);
@@ -386,7 +386,7 @@ TEST_CASE("TEST_PROC_KEYBOARD", "[PROCESSOR]"){
         REQUIRE(isKeyPressed == true);
         REQUIRE(keyPressed == 0x02);
         proc.execute(0xEEA1);
-        REQUIRE(PC == 2);
+        REQUIRE(PC == 4);
     }
     SECTION("ExA1-2 SKP Vx COMMAND"){
         proc.execute(0x6E01);
@@ -394,7 +394,7 @@ TEST_CASE("TEST_PROC_KEYBOARD", "[PROCESSOR]"){
         REQUIRE(isKeyPressed == true);
         REQUIRE(keyPressed == 0x01);
         proc.execute(0xEEA1);
-        REQUIRE(PC == 3);
+        REQUIRE(PC == 6);
     }
     SECTION("Fx0A LD Vx, k COMMAND"){
         proc.execute(0x6001);
@@ -402,7 +402,7 @@ TEST_CASE("TEST_PROC_KEYBOARD", "[PROCESSOR]"){
         REQUIRE(isKeyPressed == true);
         REQUIRE(keyPressed == 0x01);
         proc.execute(0xF00A);
-        REQUIRE(PC == 2);
+        REQUIRE(PC == 4);
         REQUIRE(regV.at(0) == 0x01);
     }
     SECTION("Fx0A LD Vx, k COMMAND"){
@@ -410,7 +410,7 @@ TEST_CASE("TEST_PROC_KEYBOARD", "[PROCESSOR]"){
         REQUIRE(isKeyPressed == false);
         REQUIRE(keyPressed == 0x00);
         proc.execute(0xF00A);
-        REQUIRE(PC == 1);
+        REQUIRE(PC == 2);
     }
 }
 
@@ -432,8 +432,26 @@ TEST_CASE("TEST_PROC_DISPLAY", "[PROCESSOR]"){
     SECTION("Dxyn, DRAW Vx, Vy, n COMMAND"){
         proc.execute(0xD01A);
 
-        std::array<size_t, 32> targets_position = {0,1,2,3,4,5,6,7, 64,65,66,67,68,69,70,71, 128,129,130,131,132,133,134,135, 192,193,194,195,196,197,198,199};
-        std::array<CHIP8::u8, 32> targets = {1,1,1,1,0,0,0,0, 1,0,0,1,0,0,0,0, 1,0,0,1,0,0,0,0, 1,0,0,1,0,0,0,0};
+        constexpr std::array<size_t, 32> targets_position = {0,1,2,3,4,5,6,7, 64,65,66,67,68,69,70,71, 128,129,130,131,132,133,134,135, 192,193,194,195,196,197,198,199};
+        constexpr std::array<CHIP8::u8, 32> targets = {1,1,1,1,0,0,0,0, 1,0,0,1,0,0,0,0, 1,0,0,1,0,0,0,0, 1,0,0,1,0,0,0,0};
+
+        for(size_t i = 0; i < targets_position.size(); i++)
+            REQUIRE(display.at(targets_position.at(i)) == targets.at(i));
+
+    }
+    SECTION("Dxyn2, DRAW Vx, Vy, n COMMAND"){
+        proc.execute(0x600F);
+        proc.execute(0x610F);
+
+        proc.execute(0xD01A);
+        constexpr std::array<size_t, 40> targets_position {{
+                                                            975,976,977,978,979,980,981,982, 
+                                                            1039,1040,1041,1042,1043,1044,1045,1046,
+                                                            1103,1104,1105,1106,1107,1108,1109,1110,
+                                                            1167,1168,1169,1170,1171,1172,1173,1174,
+                                                            1231,1232,1233,1234,1235,1236,1237,1238
+                                                            }};
+        constexpr std::array<CHIP8::u8, 40> targets = {1,1,1,1,0,0,0,0, 1,0,0,1,0,0,0,0, 1,0,0,1,0,0,0,0, 1,0,0,1,0,0,0,0, 1,1,1,1,0,0,0,0};
 
         for(size_t i = 0; i < targets_position.size(); i++)
             REQUIRE(display.at(targets_position.at(i)) == targets.at(i));
