@@ -223,6 +223,12 @@ void Proc::execute(const Proc::INSTRUCTION &instruction)
     this->handleUnknow(instruction);
   } break;
   }
+  
+  //delay timer
+  this->_delayReg -= (this->_delayReg > 0) ? 1 : 0;
+  //sound timer
+  this->_soundReg -= (this->_soundReg > 0) ? 1 : 0;
+  //log
   this->logState();
 }
 
@@ -255,9 +261,10 @@ void Proc::handle00EE(const INSTRUCTION &instruction)
 {
   // return function
   std::println("command: RET {:#0x}", instruction.getInstruction());
-  this->_PC = this->_stack.top() - 2;
+  this->_PC = this->_stack.top();
   this->_SP = this->_SP > 1 ? this->_SP - 1 : 0;
   _stack.pop();
+  this->incrementPC();
 }
 void Proc::handle1nnn(const INSTRUCTION &instruction)
 {
@@ -370,7 +377,10 @@ void Proc::handle8xy4(const INSTRUCTION &instruction)
   std::println("command: AND Vx, Vy {:#0x}", instruction.getInstruction());
   const auto y = instruction.getY();
   const auto x = instruction.getX();
-  this->_regV.at(x) += this->_regV.at(y);
+  u16 sum = this->_regV.at(x);
+  sum += this->_regV.at(y);
+  this->_regV.at(0xF) = (sum > 255) ? 1 : 0;
+  this->_regV.at(x) = (sum & 0x00ff);
   // next instruction
   this->incrementPC();
 }
@@ -380,6 +390,9 @@ void Proc::handle8xy5(const INSTRUCTION &instruction)
   std::println("command: SUB Vx, Vy {:#0x}", instruction.getInstruction());
   const auto y = instruction.getY();
   const auto x = instruction.getX();
+  const auto regY = this->_regV.at(x);
+  auto& regX = this->_regV.at(x);
+  this->_regV.at(0xF) = (regX > regY) ? 1 : 0;
   this->_regV.at(x) -= this->_regV.at(y);
   // next instruction
   this->incrementPC();
@@ -401,7 +414,10 @@ void Proc::handle8xy7(const INSTRUCTION &instruction)
   std::println("command: SUBN Vx, Vy {:#0x}", instruction.getInstruction());
   const auto y = instruction.getY();
   const auto x = instruction.getX();
-  this->_regV.at(x) = this->_regV.at(y) - this->_regV.at(x);
+  auto& regX = this->_regV.at(x);
+  auto regY = this->_regV.at(y);
+  this->_regV.at(0xF) = (regY > regX) ? 1 : 0;
+  regX = regY - regX;
   // next instruction
   this->incrementPC();
 }
@@ -441,7 +457,7 @@ void Proc::handleBnnn(const INSTRUCTION &instruction)
   std::println("command: JP V0, addr {:#0x}", instruction.getInstruction());
   const auto addr = instruction.getAddr();
   const auto V0 = this->_regV.at(0);
-  this->_PC = V0 + addr;
+  this->_PC = addr + static_cast<u16>(V0);
 }
 void Proc::handleCxkk(const INSTRUCTION &instruction)
 {
@@ -451,7 +467,7 @@ void Proc::handleCxkk(const INSTRUCTION &instruction)
   const auto value = instruction.getByte();
   const auto random = static_cast<u8>(std::rand());
   auto &Vx = this->_regV.at(x);
-  Vx = random + value;
+  Vx = random & value;
   // next instruction
   this->incrementPC();
 }
@@ -471,22 +487,22 @@ void Proc::handleDxyn(const INSTRUCTION &instruction)
 }
 void Proc::handleEx9E(const INSTRUCTION &instruction)
 {
-  // key not pressed Vx
+  // key pressed Vx
   std::println("command: SKP Vx{:#0x}", instruction.getInstruction());
   const auto x = instruction.getX();
   const auto Vx = this->_regV.at(x);
   const u8 keyValue = static_cast<u8>(this->_keyValue);
-  if (_isKeyPressed && Vx != keyValue) this->incrementPC();
+  if (_isKeyPressed && Vx == keyValue) this->incrementPC();
   this->incrementPC();
 }
 void Proc::handleExA1(const INSTRUCTION &instruction)
 {
-  // key pressed Vx
+  // key not pressed Vx
   std::println("command: SKNP Vx{:#0x}", instruction.getInstruction());
   const auto x = instruction.getX();
   const auto Vx = this->_regV.at(x);
   const u8 keyValue = static_cast<u8>(this->_keyValue);
-  if (_isKeyPressed && Vx == keyValue) this->incrementPC();
+  if (_isKeyPressed && Vx != keyValue) this->incrementPC();
   this->incrementPC();
 }
 void Proc::handleFx07(const INSTRUCTION &instruction)
@@ -536,6 +552,7 @@ void Proc::handleFx1E(const INSTRUCTION &instruction)
   std::println("command: ADD I, Vx {:#0x}", instruction.getInstruction());
   const auto x = instruction.getX();
   const auto Vx = this->_regV.at(x);
+  this->_regV.at(0xf) = (this->_regI + Vx) > 0xfff ? 1 : 0;
   this->_regI += Vx;
   this->incrementPC();// next instruction
 }
@@ -562,7 +579,6 @@ void Proc::handleFx33(const INSTRUCTION &instruction)
   const auto val2 = Vx % 10;
   Vx /= 10;
   const auto val3 = Vx % 10;
-  Vx /= 10;
   // save in memory
   this->_memory.at(regI) = val3;
   this->_memory.at(regI + 1) = val2;
