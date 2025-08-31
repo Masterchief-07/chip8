@@ -26,8 +26,8 @@ void Display::draw()
     {
         for(size_t x = 0; x < DISPLAY_X; x++)
         {
-            const size_t data_position = y * DISPLAY_Y + x;
-            const auto data = this->_proc.getMemory().at(data_position);
+            const size_t data_position = y * DISPLAY_X + x;
+            const auto data = this->_proc.getDisplay().at(data_position);
             DrawRectangle(x * widthDim, y*heightDim, widthDim, heightDim, data > 0 ? RAYWHITE : BLACK);
         }
 
