@@ -9,8 +9,11 @@ using namespace CHIP8;
 
 Proc::Proc()
   : _isKeyPressed{ false }, _keyValue{ 0 }, _delayReg{ 0 }, _soundReg{ 0 }, _SP{ 0 }, _PC{ 0 }, _regI{ 0 }, _regV{ 0 },
-    _stack{ 0 }, _display{ 0 }, _memory{ 0 }
-{}
+    _stack{}, _display{ 0 }, _memory{ 0 }
+{
+  std::copy(_digitSprite.begin(), _digitSprite.end(), _memory.begin());
+
+}
 
 void Proc::reset()
 {
@@ -20,21 +23,26 @@ void Proc::reset()
   _PC = { 0 };
   _regI = { 0 };
   _regV = { 0 };
-  _stack = { 0 };
   _display = { 0 };
   _memory = { 0 };
   _isKeyPressed = { false };
-  _keyValue = { 0 };
+  _keyValue = { CHIP8KEY::NOTHING };
+
+  STACK_ARR temp_stack{};
+  _stack.swap(temp_stack);
 }
 
 u16 Proc::fetch() const { return this->_memory[this->_PC] << 8 | this->_memory[this->_PC + 1]; }
 [[nodiscard]] Proc::INSTRUCTION Proc::decode(const u16 instruction) const { return { instruction }; }
 
 void Proc::setPC(const u16 key) { this->_PC = key; }
-void Proc::setKeyPressed(const u8 key)
+void Proc::setKeyPressed(const CHIP8KEY key)
 {
-  this->_isKeyPressed = true;
   this->_keyValue = key;
+  if(key == CHIP8KEY::NOTHING)
+    this->_isKeyPressed = false;
+  else
+    this->_isKeyPressed = true;
 }
 void Proc::setProgramToMemory(const MEMORY_ARR &data) 
 { 
@@ -220,7 +228,9 @@ void Proc::execute(const Proc::INSTRUCTION &instruction)
 
 void Proc::logState()
 {
-  const auto report = std::format("PC: {:#06x}, SP: {:#06x}, regI: {:#06x}, delayReg: {:#06x}, soundReg{:#06x},", _PC, _SP, _regI, _delayReg, _soundReg);
+  auto report = std::format("PC: {:#06x}, SP: {:#06x}, regI: {:#06x}, delayReg: {:#06x}, soundReg{:#06x}, topStack:{:#06x}\n", _PC, _SP, _regI, _delayReg, _soundReg, _stack.size() > 0 ? _stack.top() : 0);
+  for (size_t index = 0; index < _regV.size(); index++)
+    report += std::format("V{}: {:#06x}, ",index, _regV.at(index));
   std::println("{}",report);
 }
 
@@ -245,8 +255,9 @@ void Proc::handle00EE(const INSTRUCTION &instruction)
 {
   // return function
   std::println("command: RET {:#0x}", instruction.getInstruction());
-  this->_PC = this->_stack.at(this->_SP);
+  this->_PC = this->_stack.top() - 2;
   this->_SP = this->_SP > 1 ? this->_SP - 1 : 0;
+  _stack.pop();
 }
 void Proc::handle1nnn(const INSTRUCTION &instruction)
 {
@@ -261,7 +272,7 @@ void Proc::handle2nnn(const INSTRUCTION &instruction)
   std::println("command: CALL ADDR {:#0x}", instruction.getInstruction());
   const auto addr = instruction.getAddr();
   this->_SP += 1;
-  this->_stack.at(this->_SP) = this->_PC;
+  this->_stack.push(this->_PC);
   this->_PC = addr;
 }
 void Proc::handle3xkk(const INSTRUCTION &instruction)
@@ -464,7 +475,8 @@ void Proc::handleEx9E(const INSTRUCTION &instruction)
   std::println("command: SKP Vx{:#0x}", instruction.getInstruction());
   const auto x = instruction.getX();
   const auto Vx = this->_regV.at(x);
-  if (_isKeyPressed && Vx != this->_keyValue) this->incrementPC();
+  const u8 keyValue = static_cast<u8>(this->_keyValue);
+  if (_isKeyPressed && Vx != keyValue) this->incrementPC();
   this->incrementPC();
 }
 void Proc::handleExA1(const INSTRUCTION &instruction)
@@ -473,7 +485,8 @@ void Proc::handleExA1(const INSTRUCTION &instruction)
   std::println("command: SKNP Vx{:#0x}", instruction.getInstruction());
   const auto x = instruction.getX();
   const auto Vx = this->_regV.at(x);
-  if (_isKeyPressed && Vx == this->_keyValue) this->incrementPC();
+  const u8 keyValue = static_cast<u8>(this->_keyValue);
+  if (_isKeyPressed && Vx == keyValue) this->incrementPC();
   this->incrementPC();
 }
 void Proc::handleFx07(const INSTRUCTION &instruction)
@@ -490,10 +503,11 @@ void Proc::handleFx0A(const INSTRUCTION &instruction)
 {
   // LOAD Vx, key_pressed
   std::println("command: LD Vx, k {:#0x}", instruction.getInstruction());
+  const u8 keyValue = static_cast<u8>(this->_keyValue);
   const auto x = instruction.getX();
-  if (!this->_isKeyPressed) return;
   auto &Vx = this->_regV.at(x);
-  Vx = this->_keyValue;
+  if (!this->_isKeyPressed) return;
+  Vx = keyValue;
   this->incrementPC();// next instruction
 }
 void Proc::handleFx15(const INSTRUCTION &instruction)
@@ -609,8 +623,13 @@ void Proc::writeDisplay(const u8 posX, const u8 posY, const u16 memory_pos, cons
 
 u16 Proc::getSpriteMemoryLocation(const u8 number)
 {
-  // todo
-  std::ignore = number;
+  if(number < 0x10)
+    return number * 0x05;
+
+  throw std::runtime_error(std::format("[PROGRAM] UNKNOW NUMBER: {:#06x}"
+                              , number
+                            )
+                        );
   return 0;
 }
 

@@ -363,44 +363,44 @@ TEST_CASE("TEST_PROC_KEYBOARD", "[PROCESSOR]"){
     SECTION("Ex9E SKP Vx COMMAND"){
         proc.execute(0x6E01);
         REQUIRE(isKeyPressed == false);
-        REQUIRE(keyPressed == 0x0);
-        proc.setKeyPressed(0x02);
+        REQUIRE(keyPressed == CHIP8::CHIP8KEY::NOTHING);
+        proc.setKeyPressed(CHIP8::CHIP8KEY::ZERO);
         REQUIRE(isKeyPressed == true);
-        REQUIRE(keyPressed == 0x02);
+        REQUIRE(keyPressed == CHIP8::CHIP8KEY::ZERO);
         proc.execute(0xEE9E);
         REQUIRE(PC == 6);
     }
     SECTION("Ex9E-2 SKP Vx COMMAND"){
         proc.execute(0x6E01);
-        proc.setKeyPressed(0x01);
+        proc.setKeyPressed(CHIP8::CHIP8KEY::ONE);
         REQUIRE(isKeyPressed == true);
-        REQUIRE(keyPressed == 0x01);
+        REQUIRE(keyPressed == CHIP8::CHIP8KEY::ONE);
         proc.execute(0xEE9E);
         REQUIRE(PC == 4);
     }
     SECTION("ExA1 SKP Vx COMMAND"){
         proc.execute(0x6E01);
         REQUIRE(isKeyPressed == false);
-        REQUIRE(keyPressed == 0x0);
-        proc.setKeyPressed(0x02);
+        REQUIRE(keyPressed == CHIP8::CHIP8KEY::NOTHING);
+        proc.setKeyPressed(CHIP8::CHIP8KEY::A);
         REQUIRE(isKeyPressed == true);
-        REQUIRE(keyPressed == 0x02);
+        REQUIRE(keyPressed == CHIP8::CHIP8KEY::A);
         proc.execute(0xEEA1);
         REQUIRE(PC == 4);
     }
     SECTION("ExA1-2 SKP Vx COMMAND"){
         proc.execute(0x6E01);
-        proc.setKeyPressed(0x01);
+        proc.setKeyPressed(CHIP8::CHIP8KEY::A);
         REQUIRE(isKeyPressed == true);
-        REQUIRE(keyPressed == 0x01);
+        REQUIRE(keyPressed == CHIP8::CHIP8KEY::A);
         proc.execute(0xEEA1);
         REQUIRE(PC == 6);
     }
     SECTION("Fx0A LD Vx, k COMMAND"){
         proc.execute(0x6001);
-        proc.setKeyPressed(0x01);
+        proc.setKeyPressed(CHIP8::CHIP8KEY::E);
         REQUIRE(isKeyPressed == true);
-        REQUIRE(keyPressed == 0x01);
+        REQUIRE(keyPressed == CHIP8::CHIP8KEY::E);
         proc.execute(0xF00A);
         REQUIRE(PC == 4);
         REQUIRE(regV.at(0) == 0x01);
@@ -408,7 +408,7 @@ TEST_CASE("TEST_PROC_KEYBOARD", "[PROCESSOR]"){
     SECTION("Fx0A LD Vx, k COMMAND"){
         proc.execute(0x6001);
         REQUIRE(isKeyPressed == false);
-        REQUIRE(keyPressed == 0x00);
+        REQUIRE(keyPressed == CHIP8::CHIP8KEY::NOTHING);
         proc.execute(0xF00A);
         REQUIRE(PC == 2);
     }

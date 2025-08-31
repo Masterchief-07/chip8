@@ -19,6 +19,8 @@ void Chip8::run()
         const auto opcode= _proc.fetch();
         const auto instruction = _proc.decode(opcode);
         _proc.execute(instruction);
+        const auto keyPressed = this->_keyboard.getPressedKey();
+        _proc.setKeyPressed(keyPressed);
         _display.draw();
     }
 

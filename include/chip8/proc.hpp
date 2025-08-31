@@ -3,6 +3,7 @@
 #include "chip8/common.hpp"
 #include <cstddef>
 #include <array>
+#include <stack>
 
 namespace CHIP8{
 
@@ -12,6 +13,7 @@ constexpr size_t DISPLAY_Y = 32;
 constexpr size_t DISPLAY_SIZE = DISPLAY_X * DISPLAY_Y;
 constexpr size_t GENERAL_REG_SIZE = 16;
 constexpr size_t MEMORY_SIZE = 4096;
+constexpr size_t DIGITSPRITE_SIZE = 16 * 5;
 
 struct Instruction
 {
@@ -32,10 +34,11 @@ struct Instruction
 
 class Proc{
     public:
-    using STACK_ARR = std::array<u16, STACK_SIZE>;
+    using STACK_ARR = std::stack<u16>;
     using REG_ARR = std::array<u8, GENERAL_REG_SIZE>;
     using DISPLAY_ARR = std::array<u8, DISPLAY_SIZE>;
     using MEMORY_ARR = std::array<u8, MEMORY_SIZE>;
+    using DIGITSPRITE = std::array<u8, DIGITSPRITE_SIZE>;
     using INSTRUCTION = Instruction;
 
     public:
@@ -44,13 +47,13 @@ class Proc{
     void execute(const INSTRUCTION& instruction);
     void reset();
     void setPC(const u16 key);
-    void setKeyPressed(const u8 key);
+    void setKeyPressed(const CHIP8KEY key);
     void setProgramToMemory(const MEMORY_ARR& data);
     [[nodiscard]] u16 fetch() const;
     [[nodiscard]] INSTRUCTION decode(const u16 instruction) const;
 
     [[nodiscard]] inline const bool&          isKeyPressed()  const noexcept {return _isKeyPressed;};
-    [[nodiscard]] inline const u8&            getKeyPressed() const noexcept {return _keyValue;};
+    [[nodiscard]] inline const CHIP8KEY&      getKeyPressed() const noexcept {return _keyValue;};
     [[nodiscard]] inline const u8&            getDelayReg()   const noexcept {return _delayReg;};
     [[nodiscard]] inline const u8&            getSoundReg()   const noexcept {return _soundReg;};
     [[nodiscard]] inline const u8&            getSP()         const noexcept {return _SP;};
@@ -58,14 +61,14 @@ class Proc{
     [[nodiscard]] inline const u16&           getRegI()       const noexcept {return _regI;};
     [[nodiscard]] inline const u8&            getVReg(const size_t index)     const {return _regV.at(index);};
     [[nodiscard]] inline const REG_ARR&       getAllVReg()    const noexcept {return _regV;};
-    [[nodiscard]] inline const u16&           getStack(const size_t index)    const {return _stack.at(index);};
+    // [[nodiscard]] inline const u16&           getStackTop(const size_t index)    const {return _stack.at(index);};
     [[nodiscard]] inline const STACK_ARR&     getAllStack()   const noexcept {return _stack;};
     [[nodiscard]] inline const DISPLAY_ARR&   getDisplay()    const noexcept {return _display;};
     [[nodiscard]] inline const MEMORY_ARR&    getMemory()     const noexcept {return _memory;};
 
     private:
     bool        _isKeyPressed;
-    u8          _keyValue;
+    CHIP8KEY    _keyValue;
     u8          _delayReg;
     u8          _soundReg;
     u8          _SP;
@@ -75,6 +78,25 @@ class Proc{
     STACK_ARR   _stack;
     DISPLAY_ARR _display;
     MEMORY_ARR  _memory;
+    const DIGITSPRITE _digitSprite{{
+        0xf0, 0x90, 0x90, 0x90, 0xf0, //0
+        0x20, 0x60, 0x20, 0x20, 0x70, //1
+        0xf0, 0x10, 0xf0, 0x80, 0xf0, //2
+        0xf0, 0x10, 0xf0, 0x10, 0xf0, //3
+        0x90, 0x90, 0xf0, 0x10, 0x10, //4
+        0xf0, 0x80, 0xf0, 0x10, 0xf0, //5
+        0xf0, 0x80, 0xf0, 0x90, 0xf0, //6
+        0xf0, 0x10, 0x20, 0x40, 0x40, //7
+        0xf0, 0x90, 0xf0, 0x90, 0xf0, //8
+        0xf0, 0x90, 0xf0, 0x10, 0xf0, //9
+        0xf0, 0x90, 0xf0, 0x90, 0x90, //A
+        0xe0, 0x90, 0xe0, 0x90, 0xe0, //B
+        0xf0, 0x80, 0x80, 0x80, 0xf0, //C
+        0xe0, 0x90, 0x90, 0x90, 0xe0, //D
+        0xf0, 0x80, 0xf0, 0x80, 0xf0, //E
+        0xf0, 0x80, 0x90, 0x80, 0x80, //F
+    }};
+
 
     private:
     void incrementPC();
