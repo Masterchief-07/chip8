@@ -9,24 +9,24 @@ using u16 = uint16_t;
 
 enum class CHIP8KEY : u8
 {
-    ZERO = 0,
-    ONE,
-    TWO,
-    THREE,
-    FOUR,
-    FIVE,
-    SIX,
-    SEVEN,
-    EIGHT,
-    NINE,
-    A = 'a',
-    B = 'b',
-    C = 'c',
-    D = 'd',
-    E = 'e',
-    F = 'f',
+    ZERO = 0x00,
+    ONE = 0x01,
+    TWO = 0x02,
+    THREE = 0x03,
+    FOUR = 0x04,
+    FIVE = 0x05,
+    SIX = 0x06,
+    SEVEN = 0x07,
+    EIGHT = 0x08,
+    NINE = 0x09,
+    A = 0x0A,
+    B = 0x0B,
+    C = 0x0C,
+    D = 0x0D,
+    E = 0x0E,
+    F = 0x0F,
 
-    NOTHING = 255,
+    NOTHING = 0xff,
 };
 
 }

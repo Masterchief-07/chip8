@@ -26,7 +26,7 @@ void Proc::reset()
   _display = { 0 };
   _memory = { 0 };
   _isKeyPressed = { false };
-  _keyValue = { CHIP8KEY::NOTHING };
+  _keyValue = { 0 };
 
   STACK_ARR temp_stack{};
   _stack.swap(temp_stack);
@@ -36,14 +36,21 @@ u16 Proc::fetch() const { return this->_memory[this->_PC] << 8 | this->_memory[t
 [[nodiscard]] Proc::INSTRUCTION Proc::decode(const u16 instruction) const { return { instruction }; }
 
 void Proc::setPC(const u16 key) { this->_PC = key; }
+
 void Proc::setKeyPressed(const CHIP8KEY key)
 {
-  this->_keyValue = key;
   if(key == CHIP8KEY::NOTHING)
-    this->_isKeyPressed = false;
-  else
-    this->_isKeyPressed = true;
+    return;
+  this->_keyValue[static_cast<u8>(key)] = 0x01;
 }
+
+void Proc::setKeyReleased(const CHIP8KEY key)
+{
+  if(key == CHIP8KEY::NOTHING)
+    return;
+  this->_keyValue[static_cast<u8>(key)] = 0x00;
+}
+
 void Proc::setProgramToMemory(const MEMORY_ARR &data) 
 { 
   for(size_t i=_PC; i < _memory.size(); i++)
@@ -491,8 +498,7 @@ void Proc::handleEx9E(const INSTRUCTION &instruction)
   std::println("command: SKP Vx{:#0x}", instruction.getInstruction());
   const auto x = instruction.getX();
   const auto Vx = this->_regV.at(x);
-  const u8 keyValue = static_cast<u8>(this->_keyValue);
-  if (_isKeyPressed && Vx == keyValue) this->incrementPC();
+  if (this->_keyValue.at(Vx) == 1) this->incrementPC();
   this->incrementPC();
 }
 void Proc::handleExA1(const INSTRUCTION &instruction)
@@ -501,8 +507,7 @@ void Proc::handleExA1(const INSTRUCTION &instruction)
   std::println("command: SKNP Vx{:#0x}", instruction.getInstruction());
   const auto x = instruction.getX();
   const auto Vx = this->_regV.at(x);
-  const u8 keyValue = static_cast<u8>(this->_keyValue);
-  if (_isKeyPressed && Vx != keyValue) this->incrementPC();
+  if (this->_keyValue.at(Vx) != 1) this->incrementPC();
   this->incrementPC();
 }
 void Proc::handleFx07(const INSTRUCTION &instruction)
@@ -519,12 +524,19 @@ void Proc::handleFx0A(const INSTRUCTION &instruction)
 {
   // LOAD Vx, key_pressed
   std::println("command: LD Vx, k {:#0x}", instruction.getInstruction());
-  const u8 keyValue = static_cast<u8>(this->_keyValue);
   const auto x = instruction.getX();
   auto &Vx = this->_regV.at(x);
-  if (!this->_isKeyPressed) return;
-  Vx = keyValue;
-  this->incrementPC();// next instruction
+  bool key_pressed = false;
+  for(size_t i = 0 ; i < this->_keyValue.size(); i++)
+  {
+    if(this->_keyValue[i] > 0)
+    {
+      Vx = i;
+      key_pressed = true;
+    }
+  }
+  if(key_pressed)
+    this->incrementPC();// next instruction
 }
 void Proc::handleFx15(const INSTRUCTION &instruction)
 {

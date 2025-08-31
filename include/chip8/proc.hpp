@@ -39,6 +39,7 @@ class Proc{
     using DISPLAY_ARR = std::array<u8, DISPLAY_SIZE>;
     using MEMORY_ARR = std::array<u8, MEMORY_SIZE>;
     using DIGITSPRITE = std::array<u8, DIGITSPRITE_SIZE>;
+    using KEYBOARD = std::array<u8, 16>;
     using INSTRUCTION = Instruction;
 
     public:
@@ -48,12 +49,13 @@ class Proc{
     void reset();
     void setPC(const u16 key);
     void setKeyPressed(const CHIP8KEY key);
+    void setKeyReleased(const CHIP8KEY key);
     void setProgramToMemory(const MEMORY_ARR& data);
     [[nodiscard]] u16 fetch() const;
     [[nodiscard]] INSTRUCTION decode(const u16 instruction) const;
 
     [[nodiscard]] inline const bool&          isKeyPressed()  const noexcept {return _isKeyPressed;};
-    [[nodiscard]] inline const CHIP8KEY&      getKeyPressed() const noexcept {return _keyValue;};
+    [[nodiscard]] inline const KEYBOARD&      getKeyKeyboard() const noexcept {return _keyValue;};
     [[nodiscard]] inline const u8&            getDelayReg()   const noexcept {return _delayReg;};
     [[nodiscard]] inline const u8&            getSoundReg()   const noexcept {return _soundReg;};
     [[nodiscard]] inline const u8&            getSP()         const noexcept {return _SP;};
@@ -68,7 +70,7 @@ class Proc{
 
     private:
     bool        _isKeyPressed;
-    CHIP8KEY    _keyValue;
+    KEYBOARD    _keyValue;
     u8          _delayReg;
     u8          _soundReg;
     u8          _SP;

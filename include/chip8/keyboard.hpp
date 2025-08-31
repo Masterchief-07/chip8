@@ -13,7 +13,8 @@ class Keyboard{
     ~Keyboard(){};
 
     void setKeymap(unsigned int key, CHIP8KEY target);
-    [[nodiscard]] CHIP8KEY getPressedKey() const;
+    [[nodiscard]] std::array<CHIP8KEY, 16> getPressedKey() const;
+    [[nodiscard]] std::array<CHIP8KEY, 16> getReleasedKey() const;
 
     private:
     std::unordered_map<char, CHIP8KEY> _keymap;
