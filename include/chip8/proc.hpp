@@ -48,13 +48,11 @@ class Proc{
     void execute(const INSTRUCTION& instruction);
     void reset();
     void setPC(const u16 key);
-    void setKeyPressed(const CHIP8KEY key);
-    void setKeyReleased(const CHIP8KEY key);
+    void setKeyboardState(const std::array<u8, 16>& key);
     void setProgramToMemory(const MEMORY_ARR& data);
     [[nodiscard]] u16 fetch() const;
     [[nodiscard]] INSTRUCTION decode(const u16 instruction) const;
 
-    [[nodiscard]] inline const bool&          isKeyPressed()  const noexcept {return _isKeyPressed;};
     [[nodiscard]] inline const KEYBOARD&      getKeyKeyboard() const noexcept {return _keyValue;};
     [[nodiscard]] inline const u8&            getDelayReg()   const noexcept {return _delayReg;};
     [[nodiscard]] inline const u8&            getSoundReg()   const noexcept {return _soundReg;};
@@ -69,8 +67,6 @@ class Proc{
     [[nodiscard]] inline const MEMORY_ARR&    getMemory()     const noexcept {return _memory;};
 
     private:
-    bool        _isKeyPressed;
-    KEYBOARD    _keyValue;
     u8          _delayReg;
     u8          _soundReg;
     u8          _SP;
@@ -80,6 +76,7 @@ class Proc{
     STACK_ARR   _stack;
     DISPLAY_ARR _display;
     MEMORY_ARR  _memory;
+    KEYBOARD    _keyValue;
     const DIGITSPRITE _digitSprite{{
         0xf0, 0x90, 0x90, 0x90, 0xf0, //0
         0x20, 0x60, 0x20, 0x20, 0x70, //1

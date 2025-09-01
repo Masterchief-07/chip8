@@ -4,15 +4,15 @@
 #include <print>
 #include <stdexcept>
 #include <algorithm>
+#include <execution>
 
 using namespace CHIP8;
 
 Proc::Proc()
-  : _isKeyPressed{ false }, _keyValue{ 0 }, _delayReg{ 0 }, _soundReg{ 0 }, _SP{ 0 }, _PC{ 0 }, _regI{ 0 }, _regV{ 0 },
-    _stack{}, _display{ 0 }, _memory{ 0 }
+  : _delayReg{ 0 }, _soundReg{ 0 }, _SP{ 0 }, _PC{ 0 }, _regI{ 0 }, _regV{ 0 },
+    _stack{}, _display{ 0 }, _memory{ 0 }, _keyValue{ 0 } 
 {
-  std::copy(_digitSprite.begin(), _digitSprite.end(), _memory.begin());
-
+  std::copy(std::execution::par_unseq, _digitSprite.begin(), _digitSprite.end(), _memory.begin());
 }
 
 void Proc::reset()
@@ -25,7 +25,6 @@ void Proc::reset()
   _regV = { 0 };
   _display = { 0 };
   _memory = { 0 };
-  _isKeyPressed = { false };
   _keyValue = { 0 };
 
   STACK_ARR temp_stack{};
@@ -37,18 +36,9 @@ u16 Proc::fetch() const { return this->_memory[this->_PC] << 8 | this->_memory[t
 
 void Proc::setPC(const u16 key) { this->_PC = key; }
 
-void Proc::setKeyPressed(const CHIP8KEY key)
+void Proc::setKeyboardState(const std::array<u8, 16>& keyboard)
 {
-  if(key == CHIP8KEY::NOTHING)
-    return;
-  this->_keyValue[static_cast<u8>(key)] = 0x01;
-}
-
-void Proc::setKeyReleased(const CHIP8KEY key)
-{
-  if(key == CHIP8KEY::NOTHING)
-    return;
-  this->_keyValue[static_cast<u8>(key)] = 0x00;
+  std::copy(std::execution::par_unseq, keyboard.cbegin(), keyboard.cend(), _keyValue.begin());
 }
 
 void Proc::setProgramToMemory(const MEMORY_ARR &data) 

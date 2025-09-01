@@ -13,17 +13,18 @@ Keyboard::Keyboard(): _keymap{{
 
 }
 
-std::array<CHIP8KEY, 16> Keyboard::getPressedKey() const
+std::array<u8, 16> Keyboard::getKeyState() const
 {
-    std::array<CHIP8KEY, 16> keys{0};
-
+    std::array<u8, 16L> keys{};
+    for(const auto &[key, chip8Key] : this->_keymap)
+    {
+        if(IsKeyDown(key))
+            keys[static_cast<u8>(chip8Key)] = 0x01;
+        else
+            keys[static_cast<u8>(chip8Key)] = 0x00;
+    }
 
     return keys;
-}
-
-std::array<CHIP8KEY, 16> Keyboard::getReleasedKey() const
-{
-    const auto keyPressed = GetKeyPressed();
 }
 
 void Keyboard::setKeymap(unsigned int key, CHIP8KEY target)
