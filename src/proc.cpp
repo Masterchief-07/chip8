@@ -249,7 +249,8 @@ void Proc::handle00E0(const INSTRUCTION &instruction)
 {
   // clear display
   std::println("command: CLS {:#0x}", instruction.getInstruction());
-  this->_display = { 0 };
+  DISPLAY_ARR display{0};
+  this->_display.swap(display);
   // next instruction
   this->incrementPC();
 }
@@ -275,8 +276,8 @@ void Proc::handle2nnn(const INSTRUCTION &instruction)
   // call subroutine
   std::println("command: CALL ADDR {:#0x}", instruction.getInstruction());
   const auto addr = instruction.getAddr();
-  this->_SP += 1;
   this->_stack.push(this->_PC);
+  this->_SP += 1;
   this->_PC = addr;
 }
 void Proc::handle3xkk(const INSTRUCTION &instruction)
@@ -377,7 +378,7 @@ void Proc::handle8xy4(const INSTRUCTION &instruction)
   u16 sum = this->_regV.at(x);
   sum += this->_regV.at(y);
   this->_regV.at(0xF) = (sum > 255) ? 1 : 0;
-  this->_regV.at(x) = (sum & 0x00ff);
+  this->_regV.at(x) = static_cast<u8>(sum & 0x00ff);
   // next instruction
   this->incrementPC();
 }
@@ -387,10 +388,10 @@ void Proc::handle8xy5(const INSTRUCTION &instruction)
   std::println("command: SUB Vx, Vy {:#0x}", instruction.getInstruction());
   const auto y = instruction.getY();
   const auto x = instruction.getX();
-  const auto regY = this->_regV.at(x);
+  const auto regY = this->_regV.at(y);
   auto& regX = this->_regV.at(x);
   this->_regV.at(0xF) = (regX > regY) ? 1 : 0;
-  this->_regV.at(x) -= this->_regV.at(y);
+  regX -= regY;
   // next instruction
   this->incrementPC();
 }
@@ -425,7 +426,7 @@ void Proc::handle8xyE(const INSTRUCTION &instruction)
   const auto x = instruction.getX();
   const auto value = this->_regV.at(x);
   this->_regV.at(x) = value << 1;
-  this->_regV.at(15) = (value & 0b10000000) >> 8;// Vf
+  this->_regV.at(0x0f) = (value & 0b10000000) >> 8;// Vf
   // next instruction
   this->incrementPC();
 }
