@@ -54,6 +54,7 @@ class Proc{
     [[nodiscard]] u16 fetch() const;
     [[nodiscard]] INSTRUCTION decode(const u16 instruction) const;
 
+    [[nodiscard]] inline const bool           getDrawFlag() const noexcept {return _drawFlag;};
     [[nodiscard]] inline const KEYBOARD&      getKeyKeyboard() const noexcept {return _keyValue;};
     [[nodiscard]] inline const u8&            getDelayReg()   const noexcept {return _delayReg;};
     [[nodiscard]] inline const u8&            getSoundReg()   const noexcept {return _soundReg;};
@@ -68,6 +69,7 @@ class Proc{
     [[nodiscard]] inline const MEMORY_ARR&    getMemory()     const noexcept {return _memory;};
 
     private:
+    bool        _drawFlag;
     u8          _delayReg;
     u8          _soundReg;
     u8          _SP;

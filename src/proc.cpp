@@ -9,7 +9,7 @@
 using namespace CHIP8;
 
 Proc::Proc()
-  : _delayReg{ 0 }, _soundReg{ 0 }, _SP{ 0 }, _PC{ 0 }, _regI{ 0 }, _regV{ 0 },
+  : _drawFlag{false}, _delayReg{ 0 }, _soundReg{ 0 }, _SP{ 0 }, _PC{ 0 }, _regI{ 0 }, _regV{ 0 },
     _stack{}, _display{ 0 }, _memory{ 0 }, _keyValue{ 0 } 
 {
   std::copy(std::execution::par_unseq, _digitSprite.begin(), _digitSprite.end(), _memory.begin());
@@ -17,6 +17,7 @@ Proc::Proc()
 
 void Proc::reset()
 {
+  _drawFlag = false;
   _delayReg = { 0 };
   _soundReg = { 0 };
   _SP = { 0 };
@@ -54,6 +55,7 @@ void Proc::setProgramToMemory(const MEMORY_ARR &data)
 
 void Proc::execute(const Proc::INSTRUCTION &instruction)
 {
+  this->_drawFlag = false;
   const auto [opcode, x, y, z] = instruction.getData();
   switch (opcode) {
   case 0x0: {
@@ -407,7 +409,7 @@ void Proc::handle8xy6(const INSTRUCTION &instruction)
   const auto x = instruction.getX();
   const auto value = this->_regV.at(x);
   this->_regV.at(x) = value >> 1;
-  this->_regV.at(15) = value & 0b00000001;// Vf
+  this->_regV.at(15) = value & 0x1;// Vf
   // next instruction
   this->incrementPC();
 }
@@ -484,6 +486,8 @@ void Proc::handleDxyn(const INSTRUCTION &instruction)
   const auto Vx = this->_regV.at(x);
   const auto Vy = this->_regV.at(y);
   const auto memoryPosition = this->getRegI();
+  this->_regV[0xf] = 0;
+  this->_drawFlag = true;
   this->writeDisplay(Vx, Vy, memoryPosition, n);
   // next instruction
   this->incrementPC();
@@ -494,7 +498,7 @@ void Proc::handleEx9E(const INSTRUCTION &instruction)
   std::println("command: SKP Vx{:#0x}", instruction.getInstruction());
   const auto x = instruction.getX();
   const auto Vx = this->_regV.at(x);
-  if (this->_keyValue.at(Vx) == 1) this->incrementPC();
+  if (this->_keyValue.at(Vx) > 0) this->incrementPC();
   this->incrementPC();
 }
 void Proc::handleExA1(const INSTRUCTION &instruction)
@@ -503,7 +507,7 @@ void Proc::handleExA1(const INSTRUCTION &instruction)
   std::println("command: SKNP Vx{:#0x}", instruction.getInstruction());
   const auto x = instruction.getX();
   const auto Vx = this->_regV.at(x);
-  if (this->_keyValue.at(Vx) != 1) this->incrementPC();
+  if (this->_keyValue.at(Vx) < 1) this->incrementPC();
   this->incrementPC();
 }
 void Proc::handleFx07(const INSTRUCTION &instruction)

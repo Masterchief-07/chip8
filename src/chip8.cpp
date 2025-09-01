@@ -1,4 +1,5 @@
 #include "chip8/chip8.hpp"
+#include <thread>
 
 using namespace CHIP8;
 
@@ -16,16 +17,17 @@ void Chip8::run()
 {
     while(_display.isWindowOpen())
     {
-        //execute
         const auto opcode= _proc.fetch();
         const auto instruction = _proc.decode(opcode);
         _proc.execute(instruction);
-
         //key input handle
         _keyboard.setKeyState(_proc);
 
         //draw
-        _display.draw();
+        if(_proc.getDrawFlag())
+            _display.draw();
+
+        std::this_thread::sleep_for(std::chrono::microseconds(1200));
     }
 
 }
