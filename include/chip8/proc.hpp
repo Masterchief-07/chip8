@@ -49,6 +49,7 @@ class Proc{
     void reset();
     void setPC(const u16 key);
     void setKeyboardState(const std::array<u8, 16>& key);
+    void setKeyboardState(const CHIP8KEY key, const u8 value);
     void setProgramToMemory(const MEMORY_ARR& data);
     [[nodiscard]] u16 fetch() const;
     [[nodiscard]] INSTRUCTION decode(const u16 instruction) const;

@@ -7,7 +7,7 @@ using namespace CHIP8;
 Display::Display(const Proc& proc, size_t width, size_t height): _proc{proc}, _width{width}, _height{height}
 {
     InitWindow(width, height, "CHIP8");
-    SetTargetFPS(500);
+    SetTargetFPS(600);
 }
 
 Display::~Display()

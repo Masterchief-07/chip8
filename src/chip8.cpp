@@ -16,14 +16,13 @@ void Chip8::run()
 {
     while(_display.isWindowOpen())
     {
-        //key input handle
-        const auto keyStates = _keyboard.getKeyState();
-        this->_proc.setKeyboardState(keyStates);
-
         //execute
         const auto opcode= _proc.fetch();
         const auto instruction = _proc.decode(opcode);
         _proc.execute(instruction);
+
+        //key input handle
+        _keyboard.setKeyState(_proc);
 
         //draw
         _display.draw();

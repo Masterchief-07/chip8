@@ -41,6 +41,11 @@ void Proc::setKeyboardState(const std::array<u8, 16>& keyboard)
   std::copy(std::execution::par_unseq, keyboard.cbegin(), keyboard.cend(), _keyValue.begin());
 }
 
+void Proc::setKeyboardState(const CHIP8KEY key, const u8 value)
+{
+  this->_keyValue[static_cast<u8>(key)] = value;
+}
+
 void Proc::setProgramToMemory(const MEMORY_ARR &data) 
 { 
   for(size_t i=_PC; i < _memory.size(); i++)

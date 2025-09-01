@@ -1,4 +1,5 @@
 #include "chip8/keyboard.hpp"
+#include "chip8/proc.hpp"
 #include "raylib.h"
 
 using namespace CHIP8;
@@ -13,18 +14,15 @@ Keyboard::Keyboard(): _keymap{{
 
 }
 
-std::array<u8, 16> Keyboard::getKeyState() const
+void Keyboard::setKeyState(CHIP8::Proc& processor) const
 {
-    std::array<u8, 16L> keys{};
     for(const auto &[key, chip8Key] : this->_keymap)
     {
         if(IsKeyDown(key))
-            keys[static_cast<u8>(chip8Key)] = 0x01;
-        else
-            keys[static_cast<u8>(chip8Key)] = 0x00;
+            processor.setKeyboardState(chip8Key, 1);
+        else if(IsKeyUp(key))
+            processor.setKeyboardState(chip8Key, 0);
     }
-
-    return keys;
 }
 
 void Keyboard::setKeymap(unsigned int key, CHIP8KEY target)
