@@ -3,7 +3,6 @@
     "configurePresets": [
         {
             "name": "ninja-debug",
-            "displayName": "Ninja with debug",
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/debug",
             "cacheVariables": {
@@ -12,6 +11,26 @@
                 "CMAKE_C_COMPILER": "/usr/bin/gcc",
                 "CMAKE_CXX_COMPILER": "/usr/bin/g++",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            }
+        },
+        {
+            "name": "chip8Tui-debug",
+            "inherits": "ninja-debug",
+            "cacheVariables": {
+                "BUILD_TUI": {
+                    "value": "ON",
+                    "type": "BOOL"
+                }
+            }
+        },
+        {
+            "name": "chip8Gui-debug",
+            "inherits": "ninja-debug",
+            "cacheVariables": {
+                "BUILD_GUI": {
+                    "value": "ON",
+                    "type": "BOOL"
+                }
             }
         }
     ],

@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
+option(BUILD_TUI "build chip8_tui" OFF)
+
 # add_subdirectory(${CMAKE_SOURCE_DIR}/externals/raylib)
 include(dependencies.cmake)
 
@@ -23,6 +25,10 @@ target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
 add_definitions("-Wall" "-Wpedantic" "-Werror")
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/examples)
+
+if(BUILD_TUI)
+        add_subdirectory(${CMAKE_SOURCE_DIR}/projects/chip8_tui)
+endif()
 
 include(CTest)
 add_subdirectory(${CMAKE_SOURCE_DIR}/tests)
