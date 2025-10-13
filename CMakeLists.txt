@@ -6,7 +6,8 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
-add_subdirectory(${CMAKE_SOURCE_DIR}/externals/raylib)
+# add_subdirectory(${CMAKE_SOURCE_DIR}/externals/raylib)
+include(dependencies.cmake)
 
 add_library(${PROJECT_NAME}
                     ${CMAKE_SOURCE_DIR}/src/chip8.cpp

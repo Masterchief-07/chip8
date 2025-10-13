@@ -1,6 +1,5 @@
 enable_testing()
-add_subdirectory(${CMAKE_SOURCE_DIR}/externals/catch2  ${CMAKE_BINARY_DIR}/externals/catch2 EXCLUDE_FROM_ALL)
-include(${CMAKE_SOURCE_DIR}/externals/catch2/extras/Catch.cmake)
+include(${Catch2_SOURCE_DIR}/extras/Catch.cmake)
 
 add_executable(UnitTests 
                 ${CMAKE_SOURCE_DIR}/tests/test_main.cpp

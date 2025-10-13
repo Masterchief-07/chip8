@@ -1,9 +1,0 @@
-[submodule "externals/raylib"]
-	path = externals/raylib
-	url = https://github.com/raysan5/raylib.git
-[submodule "externals/catch2"]
-	path = externals/catch2
-	url = https://github.com/catchorg/Catch2.git
-[submodule "externals/chip8_roms"]
-	path = externals/chip8_roms
-	url = https://github.com/kripod/chip8-roms.git
