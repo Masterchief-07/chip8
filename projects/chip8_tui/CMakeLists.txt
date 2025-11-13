@@ -2,6 +2,8 @@
 add_executable(
         CHIP8_TUI 
         main.cpp
+        src/tui.cpp
+        src/chip8.cpp
 )
 
 target_include_directories(CHIP8_TUI PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)

@@ -10,7 +10,9 @@ class IDisplay
     IDisplay();
 
     virtual void setScreenResolution(size_t x, size_t y) = 0;
-    virtual void draw(const IProc& processor) = 0;
+    virtual void draw() = 0;
+    virtual void clear() = 0;
+    virtual void updateScreen() = 0;
 };
 
 }
